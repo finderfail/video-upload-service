@@ -3,11 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Open Graph мета-теги -->
+    <meta property="og:title" content="Jolt" id="ogTitle">
+    <meta property="og:description" content="Jolt - HQ Video-Hosting Service with 0 quality dropping" id="ogDescription">
+ 
     <title>Jolt</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <h1>Jolt - быстрая загрузка видео</h1>
+	<div id="searchSection">
+        <h2>Найти автора</h2>
+        <input type="text" id="authorNameInput" placeholder="Введите никнейм автора">
+        <button id="searchButton">Найти</button>
+    </div>
     <div id="authSection">
         <h2>Перейти на Панель Автора и Зарегистрироваться</h2>
         <button id="dashboardButton">Перейти на Dashboard</button>
@@ -16,100 +25,14 @@
     <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
     <script>
         document.getElementById('dashboardButton').addEventListener('click', function() {window.location.href = './dashboard.html'; });
-
-        const API_URL = 'http://localhost:3000';
-        let token = '';
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
-            try {
-                const response = await axios.post(`${API_URL}/login`, { username, password });
-                token = response.data.token;
-                alert('Успешный вход!');
-                document.getElementById('authSection').style.display = 'none';
-                document.getElementById('uploadSection').style.display = 'block';
-                loadVideos(); 
-            } catch (error) {
-                alert('Ошибка входа: ' + error.response.data.message);
+        document.getElementById('searchButton').addEventListener('click', function() {
+            const authorName = document.getElementById('authorNameInput').value;
+            if (authorName) {
+                window.location.href = `user.html?name=${encodeURIComponent(authorName)}`; // Переход на user.html с параметром name
+            } else {
+                alert('Пожалуйста, введите никнейм автора.');
             }
         });
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = document.getElementById('regUsername').value;
-            const password = document.getElementById('regPassword').value;
-
-            try {
-                await axios.post(`${API_URL}/register`, { username, password });
-                alert('Регистрация успешна! Теперь вы можете войти.');
-            } catch (error) {
-                alert('Ошибка регистрации: ' + error.response.data.message);
-            }
-        });
-        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const title = document.getElementById('title').value;
-            const videoFile = document.getElementById('video').files[0];
-            const formData = new FormData();
-            formData.append('title', title);
-            formData.append('video', videoFile);
-            formData.append('author', token ? jwt_decode(token).username : 'Неизвестный');
-            try {
-                const response = await axios.post(`${API_URL}/upload`, formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                alert(response.data.message);
-                loadVideos();
-            } catch (error) {
-                console.error('Ошибка загрузки видео:', error);
-            }
-        });
-
-        const loadVideos = async () => {
-        try {
-            const response = await axios.get(`${API_URL}/videos`);
-            const videosList = document.getElementById('videos');
-            videosList.innerHTML = '';
-            const currentUser  = token ? jwt_decode(token).username : null;
-            response.data.forEach(video => {
-                if (video.author === currentUser ) {
-                    const listItem = document.createElement('li');
-                    listItem.textContent = `${video.title} - Загружено пользователем: ${video.author}`;
-                    
-                    const viewButton = document.createElement('button');
-                    viewButton.textContent = 'Просмотреть';
-                    viewButton.onclick = () => {
-                        window.location.href = `video.html?id=${video.id}`;
-                    };
-                    const deleteButton = document.createElement('button');
-                    deleteButton.textContent = 'Удалить';
-                    deleteButton.onclick = async () => {
-                        try {
-                            await axios.delete(`${API_URL}/videos/${video.id}`, {
-                                headers: {
-                                    'Authorization': `Bearer ${token}`
-                                }
-                            });
-                            alert('Видео удалено!');
-                            loadVideos(); 
-                        } catch (error) {
-                            console.error('Ошибка удаления видео:', error);
-                        }
-                    };
-
-                    listItem.appendChild(viewButton);
-                    listItem.appendChild(deleteButton);
-                    videosList.appendChild(listItem);
-                }
-            });
-        } catch (error) {
-            console.error('Ошибка загрузки видео списка:', error);
-        }
-    };
     </script>
 </body>
 </html>

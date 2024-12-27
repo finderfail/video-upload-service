@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000';
+const API_URL = 'http://150.241.86.201:3000';
 
 let token = '';
 let currentUser  = '';

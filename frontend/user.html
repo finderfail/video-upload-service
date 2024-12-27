@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Open Graph мета-теги -->
+    <meta property="og:title" content="Jolt" id="ogTitle">
+    <meta property="og:description" content="Jolt - HQ Video-Hosting Service with 0 quality dropping" id="ogDescription">
+ 
+    <title id="titleauthorName"></title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1 id="authorName"></h1>
+    <ul id="videoList"></ul>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const API_URL = 'http://150.241.86.201:3000'; 
+        const urlParams = new URLSearchParams(window.location.search);
+        const authorName = urlParams.get('name'); 
+
+        const loadVideosByAuthor = async () => {
+            try {
+                const response = await axios.get(`${API_URL}/videos`);
+                const videos = response.data;
+                const videoList = document.getElementById('videoList');
+                videoList.innerHTML = ''; 
+
+                document.getElementById('authorName').textContent = `Видео от автора: ${authorName}`;
+		        document.getElementById('titleauthorName').textContent = `${authorName} - Jolt`;
+
+
+                const authorVideos = videos.filter(video => video.author === authorName);
+
+                if (authorVideos.length > 0) {
+                    authorVideos.forEach(video => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = `${video.title} - ${video.author}`;
+                        
+                        const viewButton = document.createElement('button');
+                        viewButton.textContent = 'Просмотреть';
+                        viewButton.onclick = () => {
+                            window.location.href = `video.html?id=${video.id}`; 
+                        };
+
+                        listItem.appendChild(viewButton);
+                        videoList.appendChild(listItem);
+                    });
+                } else {
+                    videoList.innerHTML = '<li>Нет видео от этого автора.</li>';
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки видео:', error);
+            }
+        };
+
+        loadVideosByAuthor();
+    </script>
+</body>
+</html>
