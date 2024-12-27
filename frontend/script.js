@@ -1,11 +1,7 @@
 const API_URL = 'http://localhost:3000';
 
-// слишком тупой чтобы это фулл сам делать
-
-
 let token = '';
-let currentUser  = ''; // Переменная для хранения текущего пользователя
-
+let currentUser  = '';
 document.getElementById('loginBtn').addEventListener('click', async () => {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
@@ -13,7 +9,7 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
     try {
         const response = await axios.post(`${API_URL}/login`, { username, password });
         token = response.data.token;
-        currentUser  = username; // Сохраняем ник пользователя
+        currentUser  = username; 
         alert('Успешный вход!');
         document.getElementById('auth').style.display = 'none';
         document.getElementById('upload').style.display = 'block';
@@ -31,7 +27,7 @@ document.getElementById('uploadBtn').addEventListener('click', async () => {
     const formData = new FormData();
     formData.append('video', file);
     formData.append('title', title);
-    formData.append('author', currentUser ); // Используем ник текущего пользователя
+    formData.append('author', currentUser ); 
 
     try {
         await axios.post(`${API_URL}/upload`, formData, {
@@ -41,7 +37,7 @@ document.getElementById('uploadBtn').addEventListener('click', async () => {
             }
         });
         alert('Видео загружено!');
-        loadVideos(); // Загружаем список видео после успешной загрузки
+        loadVideos(); 
     } catch (error) {
         alert('Ошибка загрузки видео: ' + error.response.data.message);
     }
@@ -56,15 +52,12 @@ const loadVideos = async () => {
 
         videos.forEach(video => {
             const li = document.createElement('li');
-
-            // Создаем кликабельную ссылку
             const link = document.createElement('a');
-            link.href = `video.html?url=${encodeURIComponent('http://localhost:3000/uploads/' + video.url)}`; // Переход на страницу просмотра 1735310414178.MP4
+            link.href = `video.html?url=${encodeURIComponent('http://localhost:3000/uploads/' + video.url)}`;
             link.textContent = video.title;
-            link.target = '_blank'; // Открывать в новой вкладке
-            link.style.marginRight = '10px'; // Отступ между ссылкой и кнопкой
+            link.target = '_blank'; 
+            link.style.marginRight = '10px';
 
-            // Создаем кнопку для копирования ссылки
             const copyButton = document.createElement('button');
             copyButton.textContent = 'Скопировать ссылку';
             copyButton.onclick = () => {
@@ -78,7 +71,7 @@ const loadVideos = async () => {
             videoList.appendChild(li);
         });
 
-        document.getElementById('videoList').style.display = 'block'; // Показываем список видео
+        document.getElementById('videoList').style.display = 'block'; 
     } catch (error) {
         console.error('Ошибка загрузки видео:', error);
     }
