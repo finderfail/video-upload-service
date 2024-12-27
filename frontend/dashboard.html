@@ -3,20 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jolt</title>
+    <title>Панель Автора</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Jolt - быстрая загрузка видео</h1>
+    <h1>Панель Автора</h1>
     <div id="authSection">
-        <h2>Перейти на Панель Автора и Зарегистрироваться</h2>
-        <button id="dashboardButton">Перейти на Dashboard</button>
+        <h2>Авторизация</h2>
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Имя пользователя" required>
+            <input type="password" id="password" placeholder="Пароль" required>
+            <button type="submit">Войти</button>
+        </form>
+        <h2>Регистрация</h2>
+        <form id="registerForm">
+            <input type="text" id="regUsername" placeholder="Имя пользователя" required>
+            <input type="password" id="regPassword" placeholder="Пароль" required>
+            <button type="submit">Зарегистрироваться</button>
+        </form>
+    </div>
+    <div id="uploadSection" style="display: none;">
+        <form id="uploadForm">
+            <input type="text" id="title" placeholder="Название видео" required>
+            <input type="file" id="video" accept="video/*" required>
+            <button type="submit">Загрузить</button>
+        </form>
+        <ul id="videos"></ul>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
     <script>
-        document.getElementById('dashboardButton').addEventListener('click', function() {window.location.href = './dashboard.html'; });
-
         const API_URL = 'http://localhost:3000';
         let token = '';
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
@@ -27,7 +43,7 @@
             try {
                 const response = await axios.post(`${API_URL}/login`, { username, password });
                 token = response.data.token;
-                alert('Успешный вход!');
+                //alert('Успешный вход!');
                 document.getElementById('authSection').style.display = 'none';
                 document.getElementById('uploadSection').style.display = 'block';
                 loadVideos(); 
