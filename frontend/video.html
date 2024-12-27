@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle"></title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1 id="videoTitle"></h1>
+    <h2 id="videoAuthor"></h2>
+    <video id="videoPlayer" controls style="width: 100%; max-width: 1000px;"></video>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const API_URL = 'http://localhost:3000';
+        const urlParams = new URLSearchParams(window.location.search);
+        const videoId = urlParams.get('id');
+        const loadVideo = async () => {
+            try {
+                const response = await axios.get(`${API_URL}/videos`);
+                const videos = response.data;
+                const video = videos.find(v => v.id === videoId);
+                if (video) {
+                    document.getElementById('pageTitle').textContent = `${video.title} - Jolt`;
+                    document.getElementById('videoTitle').textContent = video.title;
+                    document.getElementById('videoAuthor').textContent = `Автор: ${video.author}`;
+                    document.getElementById('videoPlayer').src = video.url;
+                } else {
+                    alert('Видео не найдено');
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки видео:', error);
+            }
+        };
+        loadVideo();
+    </script>
+</body>
+</html>

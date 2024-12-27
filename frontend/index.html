@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Загрузка видео</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Загрузка видео</h1>
+    <div id="authSection">
+        <h2>Авторизация</h2>
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Имя пользователя" required>
+            <input type="password" id="password" placeholder="Пароль" required>
+            <button type="submit">Войти</button>
+        </form>
+        <h2>Регистрация</h2>
+        <form id="registerForm">
+            <input type="text" id="regUsername" placeholder="Имя пользователя" required>
+            <input type="password" id="regPassword" placeholder="Пароль" required>
+            <button type="submit">Зарегистрироваться</button>
+        </form>
+    </div>
+    <div id="uploadSection" style="display: none;">
+        <form id="uploadForm">
+            <input type="text" id="title" placeholder="Название видео" required>
+            <input type="file" id="video" accept="video/*" required>
+            <button type="submit">Загрузить</button>
+        </form>
+        <ul id="videos"></ul>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+
+            try {
+                await axios.post('http://localhost:3000/register', { username, password });
+                alert('Пользователь зарегистрирован');
+            } catch (error) {
+                alert(error.response.data.message);
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            try {
+                const response = await axios.post('http://localhost:3000/login', { username, password });
+                localStorage.setItem('token', response.data.token);
+                localStorage.setItem('username', username);
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('uploadSection').style.display = 'block';
+                loadVideos();
+            } catch (error) {
+                alert(error.response.data.message);
+            }
+        });
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('title').value;
+            const videoFile = document.getElementById('video').files[0];
+            const token = localStorage.getItem('token');
+            const formData = new FormData();
+            formData.append('video', videoFile);
+            formData.append('title', title);
+            formData.append('author', localStorage.getItem('username'));
+            try {
+                await axios.post('http://localhost:3000/upload', formData, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                alert('Видео загружено');
+                loadVideos();
+            } catch (error) {
+                alert(error.response.data.message);
+            }
+        });
+        const loadVideos = async () => {
+            const token = localStorage.getItem('token');
+            try {
+                const response = await axios.get('http://localhost:3000/videos', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const videosList = document.getElementById('videos');
+                videosList.innerHTML = '';
+                response.data.forEach(video => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `${video.title} - ${video.url}`;
+                    
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Удалить';
+                    deleteButton.onclick = async () => {
+                        try {
+                            await axios.delete(`http://localhost:3000/videos/${video.id}`, {
+                                headers: {
+                                    'Authorization': `Bearer ${token}`
+                                }
+                            });
+                            alert('Видео удалено!');
+                            loadVideos();
+                        } catch (error) {
+                            alert('Ошибка удаления видео: ' + error.response.data.message);
+                        }
+                    };
+                    listItem.appendChild(deleteButton);
+                    videosList.appendChild(listItem);
+                });
+            } catch (error) {
+                alert('Ошибка при загрузке видео');
+            }
+        };
+    </script>
+</body>
+</html>
